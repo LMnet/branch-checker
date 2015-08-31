@@ -3,5 +3,6 @@
   "version": "0.1.0",
   "private": true,
   "dependencies": {
+    "github": "^0.2.4"
   }
 }
