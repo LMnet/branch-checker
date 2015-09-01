@@ -2,6 +2,13 @@ var GitHubApi = require("github");
 var utils = require("./utils.js");
 var http = require("http");
 
+process.stdin.resume();
+process.on('exit', utils.cleanup.bind(utils));
+process.on('SIGINT', utils.cleanup.bind(utils));
+process.on('uncaughtException', utils.cleanup.bind(utils));
+
+utils.createRootTmpDir();
+
 var github = new GitHubApi({
     version: "3.0.0",
     debug: true
@@ -14,18 +21,6 @@ github.authenticate({
 
 http.createServer(function(request, response) {
     if (request.method == 'POST') {
-        var rawBody = '';
-        request.on('data', function (chunk) {
-            rawBody += chunk;
-        });
-        request.on('end', function () {
-            var body = JSON.parse(rawBody);
-            console.log(body.zen);
-            console.log(body.hook.url);
-
-            response.writeHead(200, {"Content-Type": "text/plain"});
-            response.write("Hello World");
-            response.end();
-        });
+        utils.githubEventHandler(request, response)
     }
 }).listen(4567);
