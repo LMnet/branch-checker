@@ -90,7 +90,7 @@ Utils.prototype = {
             var repoUrl = body.repository.git_url;
             var scriptPath = "./scripts/check.sh " + branchTmpDir + " " + repoUrl + " " + branchName;
 
-            exec(scriptPath, function (err, stdout) {
+            exec(scriptPath, function (err, stdout, stderr) {
                 console.log(stdout);
 
                 var statusRequestPayload = {
@@ -101,8 +101,9 @@ Utils.prototype = {
                 };
 
                 if (err) {
-                    console.error(err);
+                    console.error(stderr);
                     statusRequestPayload.state = "failure";
+                    statusRequestPayload.description = stderr;
                 } else {
                     statusRequestPayload.state = "success";
                     statusRequestPayload.description = "All checks have passed successfully";

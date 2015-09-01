@@ -17,7 +17,7 @@ COMMIT_NUMBER=`git log --oneline master..HEAD | wc -l`
 if [ ${COMMIT_NUMBER} -eq 1 ]; then
     echo "Branch '$BRANCH_NAME' has exactly one commit"
 else
-    echo "[ERROR] Branch '$BRANCH_NAME' has more than one commit" >&2
+    echo "Branch '$BRANCH_NAME' has more than one commit" >&2
     exit 1
 fi
 
@@ -27,6 +27,6 @@ NEW_MASTER_COMMITS=`git log --oneline HEAD..master | wc -l`
 if [ ${NEW_MASTER_COMMITS} -eq 0 ]; then
     echo "Branch '$BRANCH_NAME' is rebased from master"
 else
-    echo "[ERROR] Branch '$BRANCH_NAME' is not rebased from master" >&2
+    echo "Branch '$BRANCH_NAME' is not rebased from master" >&2
     exit 1
 fi
