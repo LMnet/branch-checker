@@ -1,9 +1,28 @@
+var GitHubApi = require("github");
 var fs = require("fs");
 var randomstring = require("randomstring");
 
-var utils = {
+var Utils = function() {
+    this.github = new GitHubApi({
+        version: "3.0.0",
+        debug: true
+    });
+};
+
+Utils.prototype = {
+
+    constructor: Utils,
 
     rootTmpDir: null,
+
+    github: null,
+
+    authenticate: function() {
+        this.github.authenticate({
+            type: "oauth",
+            token: this.getToken()
+        });
+    },
 
     createRootTmpDir: function() {
         var tmpDirName = "/tmp/branch-checker-" + randomstring.generate(5);
@@ -53,9 +72,8 @@ var utils = {
             response.writeHead(200);
             response.end();
         });
-    },
-
+    }
 
 };
 
-module.exports = utils;
+module.exports = Utils;
