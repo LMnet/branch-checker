@@ -8,6 +8,14 @@ var Utils = function() {
         version: "3.0.0",
         debug: true
     });
+
+    try {
+        this.config = JSON.parse(fs.readFileSync("config.json", {encoding: "utf-8"}));
+    } catch (e) {
+        console.error('You need to create "config.json" file. You can find example config in "config.json.example".');
+        process.exit(1);
+    }
+
 };
 
 Utils.prototype = {
@@ -18,10 +26,12 @@ Utils.prototype = {
 
     github: null,
 
+    config: null,
+
     authenticate: function() {
         this.github.authenticate({
             type: "oauth",
-            token: this.getToken()
+            token: this.config.token
         });
     },
 
@@ -51,17 +61,6 @@ Utils.prototype = {
         process.exit();
     },
 
-    getToken: function() {
-        var token;
-        try {
-            token = fs.readFileSync("token", {encoding: "utf-8"});
-        } catch (e) {
-            console.error("Create 'token' file with GitHub token");
-            process.exit(1);
-        }
-        return token;
-    },
-
     githubEventHandler: function(request, response) {
         var self = this;
         var rawBody = "";
@@ -83,6 +82,7 @@ Utils.prototype = {
     _checkBranch: function(body) {
         var self = this;
         var branchName = body.pull_request.head.ref;
+        var sha = body.pull_request.head.sha;
         var branchTmpDir = this.rootTmpDir + "/" + branchName + "-" + randomstring.generate(5);
 
         try {
@@ -93,6 +93,14 @@ Utils.prototype = {
                 if (err) {
                     console.error(err);
                 }
+                self.github.statuses.create({
+                    user: "LMnet",
+                    repo: "ololo",
+                    sha: sha,
+                    state: "pending",
+                    context: "Branch checker",
+                    description: "some descr"
+                });
                 console.log(stdout);
                 self._deleteDir(branchTmpDir);
             });
