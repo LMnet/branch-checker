@@ -35,7 +35,7 @@ var utils = {
     },
 
     isMasterBranch: function(branchRef, defaultBranch) {
-        var branchFetchRegexp = /^\/refs\/heads\/(.*)$/;
+        var branchFetchRegexp = /^refs\/heads\/(.*)$/;
 
         if (!branchFetchRegexp.test(branchRef)) {
             console.error("Unknown ref: " + branchRef);
@@ -43,7 +43,7 @@ var utils = {
         }
         var branchName = branchFetchRegexp.exec(branchRef)[1];
 
-        return defaultBranch === branchName;
+        return branchName === defaultBranch;
     }
 };
 

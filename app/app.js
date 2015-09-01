@@ -11,7 +11,7 @@ var App = function() {
     });
 
     try {
-        this.config = JSON.parse(fs.readFileSync("./../config.json", {encoding: "utf-8"}));
+        this.config = JSON.parse(fs.readFileSync("./config.json", {encoding: "utf-8"}));
     } catch (e) {
         console.error('You need to create "config.json" file. You can find example in "config.json.example" file.');
         process.exit(1);
@@ -64,7 +64,7 @@ App.prototype = {
 
         try {
             fs.mkdirSync(branchTmpDir);
-            var scriptPath = "./../scripts/check.sh " + branchTmpDir + " " + data.repoGitUrl + " " + data.branchName;
+            var scriptPath = "./scripts/check.sh " + branchTmpDir + " " + data.repoGitUrl + " " + data.branchName;
 
             exec(scriptPath, function (err, stdout, stderr) {
                 console.log(stdout);
@@ -107,6 +107,7 @@ App.prototype = {
         var self = this;
 
         if (!utils.isMasterBranch(body.ref, body.repository.default_branch)) {
+            console.log("Push event skipped, because it is not master push");
             return;
         }
 
@@ -119,11 +120,13 @@ App.prototype = {
                 return console.error(err);
             }
 
+            console.log("Updating " + pullRequests.length + " pull requests");
+
             pullRequests.forEach(function(pullRequest) {
                 self._checkBranch({
                     branchName: pullRequest.head.ref,
                     branchSha: pullRequest.head.sha,
-                    repoGitUrl: pullRequest.head.git_url
+                    repoGitUrl: pullRequest.head.repo.git_url
                 })
             });
         });
