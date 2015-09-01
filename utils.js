@@ -89,13 +89,13 @@ Utils.prototype = {
             fs.mkdirSync(branchTmpDir);
             var repoUrl = body.repository.git_url;
 
-            exec("./scripts/clone.sh " + branchTmpDir + " " + repoUrl, function (err) {
+            exec("./scripts/check.sh " + branchTmpDir + " " + repoUrl + " " + branchName, function (err, stdout) {
                 if (err) {
-                    console.error("Repo cloning error: " + err);
-                    self._deleteDir(branchTmpDir);
+                    console.error(err);
                 }
+                console.log(stdout);
+                self._deleteDir(branchTmpDir);
             });
-
         } catch (e) {
             self._deleteDir(branchTmpDir);
         }
