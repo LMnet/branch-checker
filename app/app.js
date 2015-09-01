@@ -48,11 +48,12 @@ App.prototype = {
     },
 
     pullRequestEventHandler: function(request, response) {
+        var self = this;
         utils.eventHandler(request, response, function(body) {
-            this._checkBranch({
+            self._checkBranch({
                 branchName: body.pull_request.head.ref,
-                repoGitUrl: body.repository.git_url,
-                branchSha: body.pull_request.head.sha
+                branchSha: body.pull_request.head.sha,
+                repoGitUrl: body.repository.git_url
             })
         });
     },
@@ -118,6 +119,13 @@ App.prototype = {
                 return console.error(err);
             }
 
+            pullRequests.forEach(function(pullRequest) {
+                self._checkBranch({
+                    branchName: pullRequest.head.ref,
+                    branchSha: pullRequest.head.sha,
+                    repoGitUrl: pullRequest.head.git_url
+                })
+            });
         });
     }
 
