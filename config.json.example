@@ -1,3 +1,6 @@
 {
-  "token": "github_api_token"
+    "token": "github_api_token",
+    "port": 12345,
+    "repoOwner": "vasya",
+    "repoName": "super-repo"
 }
