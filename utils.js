@@ -88,20 +88,27 @@ Utils.prototype = {
         try {
             fs.mkdirSync(branchTmpDir);
             var repoUrl = body.repository.git_url;
+            var scriptPath = "./scripts/check.sh " + branchTmpDir + " " + repoUrl + " " + branchName;
 
-            exec("./scripts/check.sh " + branchTmpDir + " " + repoUrl + " " + branchName, function (err, stdout) {
+            exec(scriptPath, function (err, stdout) {
+                console.log(stdout);
+
+                var statusRequestPayload = {
+                    user: body.pull_request.head.repo.owner.login,
+                    repo: body.pull_request.head.repo.name,
+                    sha: sha,
+                    context: "Branch checker"
+                };
+
                 if (err) {
                     console.error(err);
+                    statusRequestPayload.state = "failure";
+                } else {
+                    statusRequestPayload.state = "success";
+                    statusRequestPayload.description = "All checks have passed successfully";
                 }
-                self.github.statuses.create({
-                    user: "LMnet",
-                    repo: "ololo",
-                    sha: sha,
-                    state: "pending",
-                    context: "Branch checker",
-                    description: "some descr"
-                });
-                console.log(stdout);
+
+                self.github.statuses.create(statusRequestPayload);
                 self._deleteDir(branchTmpDir);
             });
         } catch (e) {
