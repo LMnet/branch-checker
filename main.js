@@ -17,10 +17,10 @@ app.authenticate();
 http.createServer(function(request, response) {
     if (request.method == 'POST') {
         if (request.headers["x-github-event"] === "pull_request") {
-            console.log("Receive GitHub pull request event");
+            console.log("\nReceive GitHub pull request event");
             app.pullRequestEventHandler(request, response);
         } else if (request.headers["x-github-event"] === "push") {
-            console.log("Receive GitHub push event");
+            console.log("\nReceive GitHub push event");
             app.pushEventHandler(request, response);
         }
     }
