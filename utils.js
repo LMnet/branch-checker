@@ -1,6 +1,7 @@
 var GitHubApi = require("github");
 var fs = require("fs");
 var randomstring = require("randomstring");
+var exec = require('child_process').exec;
 
 var Utils = function() {
     this.github = new GitHubApi({
@@ -62,16 +63,42 @@ Utils.prototype = {
     },
 
     githubEventHandler: function(request, response) {
-        var rawBody = '';
-        request.on('data', function (chunk) {
+        var self = this;
+        var rawBody = "";
+        request.on("data", function (chunk) {
             rawBody += chunk;
         });
-        request.on('end', function () {
-            var body = JSON.parse(rawBody);
+        request.on("end", function () {
+            self._checkBranch(JSON.parse(rawBody));
 
             response.writeHead(200);
             response.end();
         });
+        request.on("error", function() {
+            response.writeHead(500);
+            response.end();
+        });
+    },
+
+    _checkBranch: function(body) {
+        var self = this;
+        var branchName = body.pull_request.head.ref;
+        var branchTmpDir = this.rootTmpDir + "/" + branchName + "-" + randomstring.generate(5);
+
+        try {
+            fs.mkdirSync(branchTmpDir);
+            var repoUrl = body.repository.git_url;
+
+            exec("./scripts/clone.sh " + branchTmpDir + " " + repoUrl, function (err) {
+                if (err) {
+                    console.error("Repo cloning error: " + err);
+                    self._deleteDir(branchTmpDir);
+                }
+            });
+
+        } catch (e) {
+            self._deleteDir(branchTmpDir);
+        }
     }
 
 };
