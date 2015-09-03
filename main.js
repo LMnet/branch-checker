@@ -29,4 +29,4 @@ http.createServer(function(request, response) {
     console.log("Receive unknown message");
 }).listen(app.config.port);
 
-console.log("Branch-checker has started");
+console.log("Branch-checker is started");

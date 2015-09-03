@@ -56,21 +56,24 @@ App.prototype = {
             self._checkBranch({
                 branchName: body.pull_request.head.ref,
                 branchSha: body.pull_request.head.sha,
-                repoGitUrl: body.repository.git_url
+                repoUrl: body.repository.ssh_url
             })
         });
     },
 
     _checkBranch: function(data) {
         var self = this;
-        console.log("Check branch " + data.branchName);
+
         var branchTmpDir = this.rootTmpDir + "/" + data.branchName + "-" + randomstring.generate(5);
+        console.log("Checking branch " + data.branchName + " in " + data.repoUrl + " repo in " +
+            branchTmpDir + " directory");
+
 
         try {
             fs.mkdirSync(branchTmpDir);
 
-            console.log("Checking...");
-            var scriptPath = "./scripts/check.sh " + branchTmpDir + " " + data.repoGitUrl + " " + data.branchName;
+            console.log("Checking start...");
+            var scriptPath = "./scripts/check.sh " + branchTmpDir + " " + data.repoUrl + " " + data.branchName;
             exec(scriptPath, function (err, stdout, stderr) {
                 console.log(stdout);
 
@@ -92,7 +95,7 @@ App.prototype = {
 
                 self.github.statuses.create(statusRequestPayload);
                 utils.deleteDir(branchTmpDir);
-                console.log("Checking has finished");
+                console.log("Checking is finished with " + statusRequestPayload.state + " status");
             });
         } catch (e) {
             console.error("Error while branch checking");
@@ -136,7 +139,7 @@ App.prototype = {
                 self._checkBranch({
                     branchName: pullRequest.head.ref,
                     branchSha: pullRequest.head.sha,
-                    repoGitUrl: pullRequest.head.repo.git_url
+                    repoUrl: pullRequest.head.repo.ssh_url
                 })
             });
         });
