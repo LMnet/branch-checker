@@ -1,6 +1,11 @@
 {
   "name": "branch-checker",
-  "version": "0.1.0",
+  "version": "0.1.1-SNAPSHOT",
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/LMnet/branch-checker.git"
+  },
+  "license": "MIT",
   "dependencies": {
     "github": "^0.2.4",
     "randomstring": "^1.0.7"
