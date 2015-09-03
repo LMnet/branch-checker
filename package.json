@@ -1,6 +1,6 @@
 {
   "name": "branch-checker",
-  "version": "0.1.1-SNAPSHOT",
+  "version": "0.1.1",
   "repository": {
     "type": "git",
     "url": "git://github.com/LMnet/branch-checker.git"
