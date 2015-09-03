@@ -1,6 +1,8 @@
 var App = require("./app/app.js");
 var http = require("http");
 
+console.log("Branch-checker is starting...");
+
 var app = new App();
 
 process.stdin.resume();
@@ -18,10 +20,13 @@ http.createServer(function(request, response) {
     if (request.method == 'POST') {
         if (request.headers["x-github-event"] === "pull_request") {
             console.log("\nReceive GitHub pull request event");
-            app.pullRequestEventHandler(request, response);
+            return app.pullRequestEventHandler(request, response);
         } else if (request.headers["x-github-event"] === "push") {
             console.log("\nReceive GitHub push event");
-            app.pushEventHandler(request, response);
+            return app.pushEventHandler(request, response);
         }
     }
+    console.log("Receive unknown message");
 }).listen(app.config.port);
+
+console.log("Branch-checker has started");

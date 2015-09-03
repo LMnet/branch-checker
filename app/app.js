@@ -5,11 +5,6 @@ var exec = require("child_process").exec;
 var utils = require("./utils.js");
 
 var App = function() {
-    this.github = new GitHubApi({
-        version: "3.0.0",
-        debug: true
-    });
-
     try {
         this.config = JSON.parse(fs.readFileSync("./config.json", {encoding: "utf-8"}));
     } catch (e) {
@@ -17,6 +12,10 @@ var App = function() {
         process.exit(1);
     }
 
+    this.github = new GitHubApi({
+        version: "3.0.0",
+        debug: this.config.githubApiDebug
+    });
 };
 
 App.prototype = {
@@ -30,6 +29,7 @@ App.prototype = {
     config: null,
 
     authenticate: function() {
+        console.log("GitHub authentication");
         this.github.authenticate({
             type: "oauth",
             token: this.config.token
@@ -37,18 +37,21 @@ App.prototype = {
     },
 
     createRootTmpDir: function() {
+        console.log("Creating root temporary directory");
         var tmpDirName = "/tmp/branch-checker-" + randomstring.generate(5);
         fs.mkdirSync(tmpDirName);
         this.rootTmpDir = tmpDirName;
     },
 
     cleanup: function() {
+        console.log("Cleanup before exit");
         utils.deleteDir(this.rootTmpDir);
         process.exit();
     },
 
     pullRequestEventHandler: function(request, response) {
         var self = this;
+        console.log("Handling pull request event");
         utils.eventHandler(request, response, function(body) {
             self._checkBranch({
                 branchName: body.pull_request.head.ref,
@@ -60,12 +63,14 @@ App.prototype = {
 
     _checkBranch: function(data) {
         var self = this;
+        console.log("Check branch " + data.branchName);
         var branchTmpDir = this.rootTmpDir + "/" + data.branchName + "-" + randomstring.generate(5);
 
         try {
             fs.mkdirSync(branchTmpDir);
-            var scriptPath = "./scripts/check.sh " + branchTmpDir + " " + data.repoGitUrl + " " + data.branchName;
 
+            console.log("Checking...");
+            var scriptPath = "./scripts/check.sh " + branchTmpDir + " " + data.repoGitUrl + " " + data.branchName;
             exec(scriptPath, function (err, stdout, stderr) {
                 console.log(stdout);
 
@@ -87,13 +92,17 @@ App.prototype = {
 
                 self.github.statuses.create(statusRequestPayload);
                 utils.deleteDir(branchTmpDir);
+                console.log("Checking has finished");
             });
         } catch (e) {
+            console.error("Error while branch checking");
+            console.error(e.stack);
             utils.deleteDir(branchTmpDir);
         }
     },
 
     pushEventHandler: function(request, response) {
+        console.log("Handling push event");
         utils.eventHandler(request, response, this._updatePullRequests.bind(this));
     },
 
@@ -110,6 +119,7 @@ App.prototype = {
             console.log("Push event skipped, because it is not master push");
             return;
         }
+        console.log("Push event from master, need to update open pull requests statuses");
 
         self.github.pullRequests.getAll({
             user: self.config.repoOwner,
@@ -120,7 +130,7 @@ App.prototype = {
                 return console.error(err);
             }
 
-            console.log("Updating " + pullRequests.length + " pull requests");
+            console.log("Updating " + pullRequests.length + " pull requests...");
 
             pullRequests.forEach(function(pullRequest) {
                 self._checkBranch({
