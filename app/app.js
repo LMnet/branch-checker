@@ -55,6 +55,7 @@ App.prototype = {
         utils.eventHandler(request, response, function(body) {
             self._checkBranch({
                 branchName: body.pull_request.head.ref,
+                baseBranchName: body.pull_request.base.ref,
                 branchSha: body.pull_request.head.sha,
                 repoUrl: body.repository.ssh_url
             })
@@ -73,7 +74,11 @@ App.prototype = {
             fs.mkdirSync(branchTmpDir);
 
             console.log("Checking start...");
-            var scriptPath = "./scripts/check.sh " + branchTmpDir + " " + data.repoUrl + " " + data.branchName;
+            var scriptPath = "./scripts/check.sh "
+                + branchTmpDir + " "
+                + data.repoUrl + " "
+                + data.branchName + " "
+                + data.baseBranchName;
             exec(scriptPath, function (err, stdout, stderr) {
                 console.log(stdout);
 
@@ -138,6 +143,7 @@ App.prototype = {
             pullRequests.forEach(function(pullRequest) {
                 self._checkBranch({
                     branchName: pullRequest.head.ref,
+                    baseBranchName: pullRequest.base.ref,
                     branchSha: pullRequest.head.sha,
                     repoUrl: pullRequest.head.repo.ssh_url
                 })
